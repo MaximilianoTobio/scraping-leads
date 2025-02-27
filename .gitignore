@@ -1,0 +1,29 @@
+# Archivos de configuración con claves API (sensibles)
+config/config.json
+
+# Entorno virtual
+venv/
+env/
+.venv/
+.env/
+
+# Resultados y logs
+results/
+logs/
+
+# Archivos de caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de IDE
+.idea/
+.vscode/
+*.swp
