@@ -8,8 +8,10 @@ env/
 .env/
 
 # Resultados y logs
-results/
-logs/
+logs/*
+!logs/.gitkeep
+results/*
+!results/.gitkeep
 
 # Archivos de caché de Python
 __pycache__/
