@@ -1,38 +1,7 @@
 {
-  "comunidades": [
-    "Andalucía",
-    "Aragón",
-    "Asturias",
-    "Baleares",
-    "Canarias",
-    "Cantabria",
-    "Castilla y León",
-    "Castilla-La Mancha",
-    "Cataluña",
-    "Comunidad Valenciana",
-    "Extremadura",
-    "Galicia",
-    "Madrid",
-    "Murcia",
-    "Navarra",
-    "País Vasco",
-    "La Rioja"
-  ],
+  "comunidades": ["Andalucía", "Cataluña"],
   "ciudades": {
-    "Andalucía": [
-      "Sevilla",
-      "Málaga",
-      "Córdoba",
-      "Granada",
-      "Almería",
-      "Jaén",
-      "Cádiz",
-      "Huelva",
-      "Marbella",
-      "Dos Hermanas",
-      "Algeciras"
-    ],
-    "Aragón": ["Zaragoza", "Huesca", "Teruel"],
-    "Asturias": ["Oviedo", "Gijón", "Avilés"]
+    "Andalucía": ["Málaga", "Marbella", "Torremolinos"],
+    "Cataluña": ["Barcelona", "Badalona", "Hospitalet de Llobregat"]
   }
 }

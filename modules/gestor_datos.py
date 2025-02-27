@@ -1,3 +1,4 @@
+import os
 import json
 import pandas as pd
 import logging
@@ -107,16 +108,21 @@ class GestorDatos:
             
         # Primero eliminar posibles duplicados
         self.eliminar_duplicados()
-        
+
+        # Obtener directorio de guardado desde la configuración
+        directorio = self.config.get('guardado', {}).get('directorio', 'results')
+        os.makedirs(directorio, exist_ok=True)
+
+
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
         # Guardar en CSV
         df = pd.DataFrame(self.contactos)
-        csv_filename = f'resultados_cbd_{timestamp}.csv'
+        csv_filename = os.path.join(directorio, f'resultados_cbd_{timestamp}.csv')
         df.to_csv(csv_filename, index=False)
         
         # Guardar en JSON
-        json_filename = f'resultados_cbd_{timestamp}.json'
+        json_filename = os.path.join(directorio, f'resultados_cbd_{timestamp}.json')
         with open(json_filename, 'w', encoding='utf-8') as f:
             json.dump(self.contactos, f, ensure_ascii=False, indent=4)
         
