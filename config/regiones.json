@@ -1,7 +1,7 @@
 {
   "comunidades": ["Andalucía", "Cataluña"],
   "ciudades": {
-    "Andalucía": ["Málaga", "Marbella", "Torremolinos"],
-    "Cataluña": ["Barcelona", "Badalona", "Hospitalet de Llobregat"]
+    "Andalucía": ["Málaga", "Marbella"],
+    "Cataluña": ["Barcelona", "Badalona"]
   }
 }
