@@ -1,4 +1,4 @@
-# Sistema de Prospección CBD
+# Sistema de Prospección Modular
 
 Un sistema modular para la prospección automatizada de negocios CBD en España, optimizado para eficiencia, escalabilidad y cumplimiento legal.
 
@@ -21,7 +21,7 @@ La arquitectura ha sido completamente rediseñada siguiendo las mejores práctic
 ## Estructura del Proyecto
 
 ```
-prospeccion_cbd/
+prospeccion_modular/
 ├── config/
 │   ├── config.json         # Configuración principal (API keys, etc.)
 │   ├── keywords.json       # Palabras clave para búsqueda
@@ -42,11 +42,13 @@ prospeccion_cbd/
 Antes de utilizar el sistema, necesitas:
 
 1. **Cuenta de Google Cloud Platform**:
+
    - Tener un proyecto activo
    - Activar la API de Custom Search
    - Generar una clave API
 
 2. **Motor de Búsqueda Personalizado**:
+
    - Crear un motor en [Programmable Search Engine](https://programmablesearchengine.google.com/)
    - Obtener el ID de búsqueda (CX)
 
@@ -55,17 +57,20 @@ Antes de utilizar el sistema, necesitas:
 ## Instalación
 
 1. Clonar o descargar este repositorio:
+
    ```bash
    git clone [url-repositorio]
    cd prospeccion_cbd
    ```
 
 2. Instalar las dependencias:
+
    ```bash
    pip install -r requirements.txt
    ```
 
 3. Crear la estructura de directorios (si no existe):
+
    ```bash
    mkdir -p config logs results
    ```
@@ -111,7 +116,7 @@ Antes de utilizar el sistema, necesitas:
   "CBD",
   "productos naturales",
   "tienda holística",
-  "tienda ecológica", 
+  "tienda ecológica",
   "herboristería",
   "aceite CBD"
 ]
@@ -122,25 +127,94 @@ Antes de utilizar el sistema, necesitas:
 ```json
 {
   "comunidades": [
-    "Andalucía", "Aragón", "Asturias", "Baleares", "Canarias",
-    "Cantabria", "Castilla y León", "Castilla-La Mancha", "Cataluña",
-    "Comunidad Valenciana", "Extremadura", "Galicia", "Madrid",
-    "Murcia", "Navarra", "País Vasco", "La Rioja"
+    "Andalucía",
+    "Aragón",
+    "Asturias",
+    "Baleares",
+    "Canarias",
+    "Cantabria",
+    "Castilla y León",
+    "Castilla-La Mancha",
+    "Cataluña",
+    "Comunidad Valenciana",
+    "Extremadura",
+    "Galicia",
+    "Madrid",
+    "Murcia",
+    "Navarra",
+    "País Vasco",
+    "La Rioja"
   ],
   "ciudades": {
-    "Andalucía": ["Sevilla", "Málaga", "Córdoba", "Granada", "Almería", "Jaén", "Cádiz", "Huelva", "Marbella", "Dos Hermanas", "Algeciras"],
+    "Andalucía": [
+      "Sevilla",
+      "Málaga",
+      "Córdoba",
+      "Granada",
+      "Almería",
+      "Jaén",
+      "Cádiz",
+      "Huelva",
+      "Marbella",
+      "Dos Hermanas",
+      "Algeciras"
+    ],
     "Aragón": ["Zaragoza", "Huesca", "Teruel"],
     "Asturias": ["Oviedo", "Gijón", "Avilés"],
     "Baleares": ["Palma", "Ibiza", "Manacor", "Mahón"],
     "Canarias": ["Las Palmas", "Santa Cruz de Tenerife", "La Laguna", "Arona"],
     "Cantabria": ["Santander", "Torrelavega"],
-    "Castilla y León": ["Valladolid", "Burgos", "Salamanca", "León", "Zamora", "Ávila", "Segovia", "Soria", "Palencia"],
-    "Castilla-La Mancha": ["Toledo", "Albacete", "Ciudad Real", "Cuenca", "Guadalajara"],
-    "Cataluña": ["Barcelona", "Tarragona", "Lleida", "Girona", "Sabadell", "Terrassa", "Badalona"],
-    "Comunidad Valenciana": ["Valencia", "Alicante", "Castellón", "Elche", "Torrevieja"],
+    "Castilla y León": [
+      "Valladolid",
+      "Burgos",
+      "Salamanca",
+      "León",
+      "Zamora",
+      "Ávila",
+      "Segovia",
+      "Soria",
+      "Palencia"
+    ],
+    "Castilla-La Mancha": [
+      "Toledo",
+      "Albacete",
+      "Ciudad Real",
+      "Cuenca",
+      "Guadalajara"
+    ],
+    "Cataluña": [
+      "Barcelona",
+      "Tarragona",
+      "Lleida",
+      "Girona",
+      "Sabadell",
+      "Terrassa",
+      "Badalona"
+    ],
+    "Comunidad Valenciana": [
+      "Valencia",
+      "Alicante",
+      "Castellón",
+      "Elche",
+      "Torrevieja"
+    ],
     "Extremadura": ["Mérida", "Badajoz", "Cáceres"],
-    "Galicia": ["Santiago de Compostela", "A Coruña", "Vigo", "Ourense", "Lugo", "Pontevedra"],
-    "Madrid": ["Madrid", "Móstoles", "Alcalá de Henares", "Fuenlabrada", "Leganés", "Getafe"],
+    "Galicia": [
+      "Santiago de Compostela",
+      "A Coruña",
+      "Vigo",
+      "Ourense",
+      "Lugo",
+      "Pontevedra"
+    ],
+    "Madrid": [
+      "Madrid",
+      "Móstoles",
+      "Alcalá de Henares",
+      "Fuenlabrada",
+      "Leganés",
+      "Getafe"
+    ],
     "Murcia": ["Murcia", "Cartagena", "Lorca"],
     "Navarra": ["Pamplona", "Tudela"],
     "País Vasco": ["Bilbao", "San Sebastián", "Vitoria"],
@@ -160,6 +234,7 @@ python main.py
 ```
 
 Con la configuración predeterminada (`"modo_prueba": true`), el sistema utilizará solo:
+
 - Las 2 primeras palabras clave
 - Las 2 primeras comunidades autónomas
 - Las 2 primeras ciudades de cada comunidad
@@ -179,6 +254,7 @@ Para realizar una búsqueda completa:
 ### 1. Buscador (Google API)
 
 El módulo `buscador.py` implementa:
+
 - Búsqueda mediante Google Custom Search API
 - Construcción óptima de consultas
 - Control de ritmo para respetar límites de la API
@@ -200,6 +276,7 @@ El módulo `extractor.py` incluye:
 ### 3. Gestor de Datos
 
 El módulo `gestor_datos.py` gestiona:
+
 - Detección eficiente de duplicados
 - Normalización de formatos
 - Guardado periódico y final
@@ -209,16 +286,19 @@ El módulo `gestor_datos.py` gestiona:
 ## Funcionamiento en Detalle
 
 1. **Inicialización**:
+
    - Carga de configuración
    - Inicialización de componentes
    - Configuración de logging
 
 2. **Proceso de Búsqueda**:
+
    - Iteración por comunidades autónomas y palabras clave
    - Búsqueda mediante Google API
    - Obtención de URLs de resultados
 
 3. **Extracción de Datos**:
+
    - Selección de método de extracción para cada URL
    - Petición y análisis de páginas web
    - Extracción de emails, teléfonos y nombres
@@ -234,22 +314,26 @@ El módulo `gestor_datos.py` gestiona:
 Este sistema ha sido optimizado siguiendo las recomendaciones del informe técnico:
 
 1. **Uso de APIs oficiales** en lugar de scraping directo:
+
    - Mayor eficiencia y rendimiento
    - Cumplimiento de términos de servicio
    - Reducción de riesgos de bloqueo
 
 2. **Reducción del uso de Selenium**:
+
    - Menor consumo de recursos
    - Mayor velocidad de procesamiento
    - Enfoque híbrido para máxima efectividad
 
 3. **Técnicas anti-bloqueo mejoradas**:
+
    - Rotación de User-Agents
    - Respeto de robots.txt
    - Delays inteligentes
    - Headers realistas
 
 4. **Estructura modular**:
+
    - Separación de responsabilidades
    - Fácil mantenimiento y extensión
    - Mayor testabilidad
@@ -272,16 +356,16 @@ def __init__(self, config):
         "http://usuario:contraseña@proxy1:puerto",
         "http://usuario:contraseña@proxy2:puerto"
     ]
-    
+
 def _get_proxy(self):
     return random.choice(self.proxies)
-    
+
 def extraer_info(self, url, zona, tipo_zona, keyword):
     # ... código existente ...
     try:
         proxy = self._get_proxy()
         response = requests.get(
-            url, 
+            url,
             headers=self._get_random_headers(),
             proxies={"http": proxy, "https": proxy},
             timeout=10
@@ -300,15 +384,15 @@ def necesita_javascript(self, url):
     for dominio in self.js_required_domains:
         if dominio in url:
             return True
-            
+
     # Intentar análisis preliminar
     try:
         r = requests.get(url, timeout=5)
         if r.status_code == 200:
             # Buscar indicadores de contenido dinámico
             js_indicators = [
-                'vue.js', 'react', 'angular', 
-                'onclick=', 'data-react', 
+                'vue.js', 'react', 'angular',
+                'onclick=', 'data-react',
                 'loadContact', 'showEmail'
             ]
             for indicator in js_indicators:
@@ -371,6 +455,6 @@ Para mantener el sistema actualizado:
 
 ## Créditos y Licencia
 
-Este sistema fue desarrollado siguiendo el análisis y recomendaciones de optimización para el script de prospección original. 
+Este sistema fue desarrollado siguiendo el análisis y recomendaciones de optimización para el script de prospección original.
 
 Licencia: MIT
