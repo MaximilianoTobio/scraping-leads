@@ -344,13 +344,15 @@ class ExtractorSelector:
         
         # Dominios que sabemos que requieren JavaScript
         self.js_required_domains = [
-            # Lista de dominios que sabemos que usan JS para mostrar contactos
-            # Ejemplo: 'example.com', 'dynamic-site.es'
+            # Agregar aquí dominios conocidos que requieren JS
+            'infoempresa.com', 'facebook.com', 'instagram.com', 'linkedin.com',
+            'twitter.com', 'einforma.com', 'empresite.eleconomista.es',
+            'guiaempresas.universia.es', 'expansion.com', 'axesor.es'
         ]
     
     def necesita_javascript(self, url: str) -> bool:
         """
-        Determina si una URL probablemente necesita JavaScript para cargar contenido.
+        Determina de manera robusta si una URL probablemente necesita JavaScript para cargar contenido.
         
         Args:
             url: URL a evaluar
@@ -358,14 +360,104 @@ class ExtractorSelector:
         Returns:
             True si probablemente necesita JS, False en caso contrario
         """
-        # Verificar si está en la lista de dominios conocidos
+        # 1. Verificar lista de dominios conocidos
         for dominio in self.js_required_domains:
             if dominio in url:
                 return True
         
-        # En la primera versión, asumimos que la mayoría son estáticas
-        # Se podría implementar detección más sofisticada después
-        return False
+        # 2. Realizar análisis preliminar
+        try:
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+            }
+            r = requests.get(url, headers=headers, timeout=5)
+            
+            if r.status_code != 200:
+                # Si hay problemas para acceder, usar Selenium por seguridad
+                return True
+                
+            html = r.text.lower()
+            
+            # 3. Buscar frameworks y bibliotecas JavaScript
+            js_frameworks = [
+                'vue', 'react', 'angular', 'jquery', 'next.js', 'nuxt', 
+                'typescript', 'svelte', 'meteor', 'ember'
+            ]
+            
+            for framework in js_frameworks:
+                if framework in html:
+                    self.logger.info(f"Detectado framework {framework} en {url}")
+                    return True
+            
+            # 4. Buscar indicadores de interactividad JavaScript
+            js_indicators = [
+                # JavaScript para mostrar datos dinámicamente
+                'onclick=', 'onmouseover=', 'document.write', 'document.getElementById',
+                '.innerHTML', 'fetch(', 'axios.', '.ajax', '.post(', '.get(',
+                
+                # Protección de contactos
+                'data-email', 'data-tel', 'protected-email', 'decode(', 'unveil(', 
+                'reveal', 'protected-content', 'data-cfemail',
+                
+                # Frameworks generales
+                'app.js', 'bundle.js', 'main.js',
+                
+                # Carga diferida
+                'lazy-load', 'lazy-src', 'data-src', 'loading="lazy"',
+                
+                # SPA (Single Page Applications)
+                'router-view', 'router-link', 'ng-view', 'data-route'
+            ]
+            
+            for indicator in js_indicators:
+                if indicator in html:
+                    self.logger.info(f"Detectado indicador JS '{indicator}' en {url}")
+                    return True
+                    
+            # 5. Verificar ocultamiento de correos y teléfonos
+            # Buscar patrones que sugieren que los contactos están protegidos
+            soup = BeautifulSoup(html, 'html.parser')
+            
+            # Patrones comunes de protección
+            if len(soup.select('span[data-email]')) > 0 or len(soup.select('[data-tel]')) > 0:
+                return True
+                
+            # Verificar si existen elementos que parecen contactos pero están codificados o vacíos
+            contact_patterns = [
+                '[email protected]', 'email-protected', 'contact@', 'info@',
+                'span.email', 'div.email', '.contact-email', '.contact-phone'
+            ]
+            
+            for pattern in contact_patterns:
+                if pattern in html or soup.select(pattern):
+                    return True
+            
+            # 6. Verificar la ausencia de información de contacto visible
+            # Si no hay teléfonos ni correos visibles, probablemente estén ocultos con JS
+            email_regex = r'[\w\.-]+@[\w\.-]+\.\w+'
+            phone_regex = r'(?:\+34|34)?[ -]?[6789]\d{2}[ -]?\d{2}[ -]?\d{2}[ -]?\d{2}'
+            
+            emails_found = re.findall(email_regex, html)
+            phones_found = re.findall(phone_regex, html)
+            
+            # Si hay mucho contenido pero no hay contactos visibles, probablemente necesite JS
+            if len(html) > 10000 and not emails_found and not phones_found:
+                self.logger.info(f"Página grande sin contactos visibles en {url}, probablemente necesite JS")
+                return True
+            
+            # Si parece ser una página de contacto pero no hay información visible, usar JS
+            if 'contacto' in url.lower() or 'contact' in url.lower():
+                if not emails_found and not phones_found:
+                    return True
+            
+            # Default: si pasó todas las verificaciones, probablemente no necesite JS
+            return False
+            
+        except Exception as e:
+            self.logger.warning(f"Error al analizar {url}, usando Selenium por precaución: {str(e)}")
+            # En caso de error, usar Selenium por seguridad
+            return True
     
     def extraer_informacion(self, url: str, zona: str, tipo_zona: str, keyword: str) -> Dict[str, Any]:
         """

@@ -1,5 +1,7 @@
 # Archivos de configuración con claves API (sensibles)
 config/config.json
+config/checkpoint.json
+config/contador_busquedas.json
 
 # Entorno virtual
 venv/
