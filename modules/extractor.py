@@ -96,7 +96,7 @@ class BaseExtractor:
             return None
             
         telefono_limpio = telefono.replace('+34', '').replace(' ', '').replace('-', '')
-        mensaje = quote("Hola, me gustaría obtener información sobre productos CBD")
+        mensaje = quote("mensaje a enviar... ")
         return f"https://wa.me/34{telefono_limpio}?text={mensaje}"
     
     def extraer_info(self, url: str, zona: str, tipo_zona: str, keyword: str) -> Dict[str, Any]:

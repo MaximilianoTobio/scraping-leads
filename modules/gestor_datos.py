@@ -117,11 +117,11 @@ class GestorDatos:
         
         # Guardar en CSV
         df = pd.DataFrame(self.contactos)
-        csv_filename = os.path.join(directorio, f'resultados_cbd_{timestamp}.csv')
+        csv_filename = os.path.join(directorio, f'resultados_{timestamp}.csv')
         df.to_csv(csv_filename, index=False)
         
         # Guardar en JSON
-        json_filename = os.path.join(directorio, f'resultados_cbd_{timestamp}.json')
+        json_filename = os.path.join(directorio, f'resultados_{timestamp}.json')
         with open(json_filename, 'w', encoding='utf-8') as f:
             json.dump(self.contactos, f, ensure_ascii=False, indent=4)
         
@@ -157,11 +157,11 @@ class GestorDatos:
         
         # Guardar en CSV
         df_stats = pd.DataFrame([stats])
-        csv_filename = os.path.join(directorio, f'estadisticas_cbd_{timestamp}.csv')
+        csv_filename = os.path.join(directorio, f'estadisticas_{timestamp}.csv')
         df_stats.to_csv(csv_filename, index=False)
         
         # Guardar en JSON
-        json_filename = os.path.join(directorio, f'estadisticas_cbd_{timestamp}.json')
+        json_filename = os.path.join(directorio, f'estadisticas_{timestamp}.json')
         with open(json_filename, 'w', encoding='utf-8') as f:
             json.dump(stats, f, ensure_ascii=False, indent=4)
         

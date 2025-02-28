@@ -1,10 +1,10 @@
 # Sistema de Prospección Modular
 
-Un sistema modular para la prospección automatizada de negocios CBD en España, optimizado para eficiencia, escalabilidad y cumplimiento legal.
+Un sistema modular para la prospección automatizada de negocios en por zona o paises, este ejemplo es en España, optimizado para eficiencia, escalabilidad y cumplimiento legal.
 
 ## Descripción General
 
-Este sistema permite identificar y extraer información de contacto (correos electrónicos y teléfonos) de negocios relacionados con productos CBD y naturales en diferentes regiones de España. El sistema realiza búsquedas combinando palabras clave con ubicaciones geográficas, extrae datos de contacto de los sitios web encontrados, y guarda los resultados en formatos CSV y JSON.
+Este sistema permite identificar y extraer información de contacto (correos electrónicos y teléfonos) de negocios relacionados con productos naturales en diferentes regiones de España. El sistema realiza búsquedas combinando palabras clave con ubicaciones geográficas, extrae datos de contacto de los sitios web encontrados, y guarda los resultados en formatos CSV y JSON.
 
 La arquitectura ha sido completamente rediseñada siguiendo las mejores prácticas de desarrollo y las recomendaciones del informe técnico para optimizar rendimiento, eficiencia y cumplimiento legal.
 
@@ -60,7 +60,7 @@ Antes de utilizar el sistema, necesitas:
 
    ```bash
    git clone [url-repositorio]
-   cd prospeccion_cbd
+   cd prospeccion_modular
    ```
 
 2. Instalar las dependencias:
@@ -113,12 +113,10 @@ Antes de utilizar el sistema, necesitas:
 [
   "herbolario",
   "tienda natural",
-  "CBD",
   "productos naturales",
   "tienda holística",
   "tienda ecológica",
-  "herboristería",
-  "aceite CBD"
+  "herboristería"
 ]
 ```
 

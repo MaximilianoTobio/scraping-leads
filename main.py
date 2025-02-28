@@ -16,9 +16,9 @@ from modules.buscador import GoogleBuscador
 from modules.extractor import ExtractorSelector
 from modules.gestor_datos import GestorDatos
 
-class ProspectorCBD:
+class Prospector:
     """
-    Clase principal que coordina el proceso de prospección de negocios CBD.
+    Clase principal que coordina el proceso de prospección de negocios.
     Implementa un diseño modular que separa responsabilidades.
     """
     
@@ -30,7 +30,7 @@ class ProspectorCBD:
         
         # Configurar logging
         self.logger = setup_logging()
-        self.logger.info("Iniciando ProspectorCBD con estructura modular...")
+        self.logger.info("Iniciando Prospector con estructura modular...")
         
         try:
             # Cargar configuración
@@ -170,7 +170,7 @@ def main():
     """Función principal para ejecutar el script."""
     try:
         # Crear y ejecutar el prospector
-        prospector = ProspectorCBD()
+        prospector = Prospector()
         stats = prospector.ejecutar_busqueda()
         
         # Mostrar resumen en consola

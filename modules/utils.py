@@ -53,7 +53,7 @@ def setup_logging() -> logging.Logger:
     # Crear directorio de logs si no existe
     os.makedirs('logs', exist_ok=True)
     
-    log_filename = f'logs/prospeccion_cbd_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log'
+    log_filename = f'logs/prospeccion_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log'
     
     logging.basicConfig(
         level=logging.INFO,
@@ -64,7 +64,7 @@ def setup_logging() -> logging.Logger:
         ]
     )
     
-    return logging.getLogger('ProspectorCBD')
+    return logging.getLogger('Prospector')
 
 def filtrar_parametros_prueba(config: Dict[str, Any]) -> Dict[str, Any]:
     """
