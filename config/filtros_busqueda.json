@@ -1,0 +1,23 @@
+{
+  "sector_activo": "default",
+  "sectores": {
+    "default": {
+      "inclusiones": ["distribuidor", "tienda", "venta", "mayorista", "minorista"],
+      "exclusiones": ["receta", "blog", "foro", "wikipedia", "noticias"],
+      "terminos_relevantes": ["catálogo", "productos", "distribución", "precios", "stock"],
+      "terminos_irrelevantes": ["fabricante", "productor", "elaboración propia"]
+    },
+    "cbd": {
+      "inclusiones": ["herbolario", "tienda natural", "wellness"],
+      "exclusiones": ["farmacia", "panadería", "restaurante", "cocina"],
+      "terminos_relevantes": ["aceite", "cannabidiol", "cáñamo", "extracto"],
+      "terminos_irrelevantes": ["recetas", "cocinar", "comida"]
+    },
+    "cosmetica": {
+      "inclusiones": ["belleza", "estética", "peluquería", "spa"],
+      "exclusiones": ["formación", "academia", "cursos"],
+      "terminos_relevantes": ["crema", "tratamiento", "productos", "distribución"],
+      "terminos_irrelevantes": ["servicio", "cita", "tratamiento facial"]
+    }
+  }
+}
