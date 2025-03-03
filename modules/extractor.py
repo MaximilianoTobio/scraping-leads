@@ -28,9 +28,79 @@ class BaseExtractor:
         self.logger = logging.getLogger('Extractor')
         self.delay_range = config['delays']['entre_extracciones']
         
+        # Lista de dominios comunes de bibliotecas y frameworks para exclusión
+        self.exclusion_domains = [
+            'jquery', 'js', 'cdn', 'npm', 'webpack', 'babel', 'typescript',
+            'vue', 'react', 'angular', 'node', 'npm', 'yarn', 'gulp', 'grunt',
+            'browserify', 'webpack', 'parcel', 'rollup', 'vite', 'esbuild',
+            'eslint', 'prettier', 'stylelint', 'postcss', 'sass', 'less',
+            'tailwind', 'bootstrap', 'foundation', 'material', 'semantic',
+            'lodash', 'underscore', 'moment', 'luxon', 'dayjs', 'date-fns',
+            'axios', 'fetch', 'superagent', 'request', 'got', 'ky', 'phin',
+            'sequelize', 'mongoose', 'typeorm', 'prisma', 'knex', 'objection',
+            'express', 'koa', 'hapi', 'fastify', 'nest', 'next', 'nuxt',
+            'gatsby', 'sapper', 'svelte', 'ember', 'backbone', 'riot', 'aurelia',
+            'sentry', 'bugsnag', 'rollbar', 'logrocket', 'datadog', 'newrelic',
+            'cypress', 'jest', 'mocha', 'chai', 'karma', 'jasmine', 'ava',
+            'storybook', 'styleguidist', 'docz', 'docsify', 'vuepress', 'docusaurus',
+            'socket', 'ws', 'graphql', 'apollo', 'relay', 'urql', 'hasura',
+            'admin', 'version', 'v1', 'v2', 'v3', 'v4', 'v5', 'spa', 'web',
+            'frontend', 'backend', 'api', 'service', 'app', 'module', 'plugin'
+        ]
+        
         # Patrones de regex para email y teléfono
-        self.email_pattern = r'[\w\.-]+@[\w\.-]+\.\w+'
+        self.email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
         self.phone_pattern = r'(?:\+34|34)?[ -]?[6789]\d{8}|(?:\+34|34)?[ -]?[6789](?:[ -]?\d{2}){4}'
+    
+    def validar_email(self, email: str) -> bool:
+        """
+        Valida que un email parezca legítimo y no sea una referencia a biblioteca.
+        
+        Args:
+            email: Dirección de correo a validar
+            
+        Returns:
+            True si el email parece válido, False en caso contrario
+        """
+        if not email or '@' not in email:
+            return False
+        
+        # Verificar longitud mínima y máxima
+        if len(email) < 6 or len(email) > 254:
+            return False
+        
+        # Extraer el dominio (parte después del @)
+        dominio_parts = email.split('@')
+        if len(dominio_parts) != 2:
+            return False
+            
+        dominio = dominio_parts[1].lower()
+        
+        # Verificar si el dominio es un TLD válido
+        if '.' not in dominio:
+            return False
+        
+        # Verificar si es un dominio de biblioteca o framework
+        nombre_dominio = dominio.split('.')[0]
+        for exclusion in self.exclusion_domains:
+            if exclusion == nombre_dominio or exclusion in nombre_dominio:
+                return False
+        
+        # Verificar que el TLD tenga al menos 2 caracteres
+        extension = dominio.split('.')[-1]
+        if len(extension) < 2:
+            return False
+        
+        # Verificar si el email tiene números de versión (típico en libs)
+        usuario = dominio_parts[0].lower()
+        if re.search(r'\d+\.\d+\.\d+', usuario) or re.search(r'v\d+', usuario):
+            return False
+            
+        # Rechazar emails con nombres de usuario muy cortos (a@dominio.com)
+        if len(usuario) < 2:
+            return False
+            
+        return True
     
     def _verificar_robots_txt(self, url: str) -> bool:
         """
@@ -172,8 +242,20 @@ class StaticExtractor(BaseExtractor):
             
             # Buscar email
             email_matches = re.findall(self.email_pattern, visible_text)
-            if email_matches:
-                contacto['email'] = email_matches[0].lower()
+            email_valido = False
+            
+            for email in email_matches:
+                email_lower = email.lower()
+                if self.validar_email(email_lower):
+                    contacto['email'] = email_lower
+                    email_valido = True
+                    self.logger.info(f"Email válido encontrado: {email_lower}")
+                    break
+                else:
+                    self.logger.debug(f"Email descartado: {email_lower}")
+            
+            if not email_valido and email_matches:
+                self.logger.info(f"Se encontraron {len(email_matches)} posibles emails, pero ninguno pasó la validación")
             
             # Buscar teléfono
             phone_matches = re.findall(self.phone_pattern, visible_text)
@@ -280,8 +362,20 @@ class DynamicExtractor(BaseExtractor):
             
             # Buscar email
             email_matches = re.findall(self.email_pattern, page_source)
-            if email_matches:
-                contacto['email'] = email_matches[0].lower()
+            email_valido = False
+            
+            for email in email_matches:
+                email_lower = email.lower()
+                if self.validar_email(email_lower):
+                    contacto['email'] = email_lower
+                    email_valido = True
+                    self.logger.info(f"Email válido encontrado: {email_lower}")
+                    break
+                else:
+                    self.logger.debug(f"Email descartado: {email_lower}")
+            
+            if not email_valido and email_matches:
+                self.logger.info(f"Se encontraron {len(email_matches)} posibles emails, pero ninguno pasó la validación")
             
             # Buscar teléfono
             phone_matches = re.findall(self.phone_pattern, page_source)
