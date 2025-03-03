@@ -28,9 +28,79 @@ class BaseExtractor:
         self.logger = logging.getLogger('Extractor')
         self.delay_range = config['delays']['entre_extracciones']
         
+        # Lista de dominios comunes de bibliotecas y frameworks para exclusión
+        self.exclusion_domains = [
+            'jquery', 'js', 'cdn', 'npm', 'webpack', 'babel', 'typescript',
+            'vue', 'react', 'angular', 'node', 'npm', 'yarn', 'gulp', 'grunt',
+            'browserify', 'webpack', 'parcel', 'rollup', 'vite', 'esbuild',
+            'eslint', 'prettier', 'stylelint', 'postcss', 'sass', 'less',
+            'tailwind', 'bootstrap', 'foundation', 'material', 'semantic',
+            'lodash', 'underscore', 'moment', 'luxon', 'dayjs', 'date-fns',
+            'axios', 'fetch', 'superagent', 'request', 'got', 'ky', 'phin',
+            'sequelize', 'mongoose', 'typeorm', 'prisma', 'knex', 'objection',
+            'express', 'koa', 'hapi', 'fastify', 'nest', 'next', 'nuxt',
+            'gatsby', 'sapper', 'svelte', 'ember', 'backbone', 'riot', 'aurelia',
+            'sentry', 'bugsnag', 'rollbar', 'logrocket', 'datadog', 'newrelic',
+            'cypress', 'jest', 'mocha', 'chai', 'karma', 'jasmine', 'ava',
+            'storybook', 'styleguidist', 'docz', 'docsify', 'vuepress', 'docusaurus',
+            'socket', 'ws', 'graphql', 'apollo', 'relay', 'urql', 'hasura',
+            'admin', 'version', 'v1', 'v2', 'v3', 'v4', 'v5', 'spa', 'web',
+            'frontend', 'backend', 'api', 'service', 'app', 'module', 'plugin'
+        ]
+        
         # Patrones de regex para email y teléfono
-        self.email_pattern = r'[\w\.-]+@[\w\.-]+\.\w+'
+        self.email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
         self.phone_pattern = r'(?:\+34|34)?[ -]?[6789]\d{8}|(?:\+34|34)?[ -]?[6789](?:[ -]?\d{2}){4}'
+    
+    def validar_email(self, email: str) -> bool:
+        """
+        Valida que un email parezca legítimo y no sea una referencia a biblioteca.
+        
+        Args:
+            email: Dirección de correo a validar
+            
+        Returns:
+            True si el email parece válido, False en caso contrario
+        """
+        if not email or '@' not in email:
+            return False
+        
+        # Verificar longitud mínima y máxima
+        if len(email) < 6 or len(email) > 254:
+            return False
+        
+        # Extraer el dominio (parte después del @)
+        dominio_parts = email.split('@')
+        if len(dominio_parts) != 2:
+            return False
+            
+        dominio = dominio_parts[1].lower()
+        
+        # Verificar si el dominio es un TLD válido
+        if '.' not in dominio:
+            return False
+        
+        # Verificar si es un dominio de biblioteca o framework
+        nombre_dominio = dominio.split('.')[0]
+        for exclusion in self.exclusion_domains:
+            if exclusion == nombre_dominio or exclusion in nombre_dominio:
+                return False
+        
+        # Verificar que el TLD tenga al menos 2 caracteres
+        extension = dominio.split('.')[-1]
+        if len(extension) < 2:
+            return False
+        
+        # Verificar si el email tiene números de versión (típico en libs)
+        usuario = dominio_parts[0].lower()
+        if re.search(r'\d+\.\d+\.\d+', usuario) or re.search(r'v\d+', usuario):
+            return False
+            
+        # Rechazar emails con nombres de usuario muy cortos (a@dominio.com)
+        if len(usuario) < 2:
+            return False
+            
+        return True
     
     def _verificar_robots_txt(self, url: str) -> bool:
         """
@@ -118,8 +188,6 @@ class StaticExtractor(BaseExtractor):
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15",
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0"
         ]
-        # Variable para almacenar el último texto visible
-        self.ultimo_texto_visible = ""
     
     def _get_random_headers(self) -> Dict[str, str]:
         """Genera headers aleatorios para simular navegador real."""
@@ -172,13 +240,22 @@ class StaticExtractor(BaseExtractor):
             # Extraer todo el texto visible de la página
             visible_text = soup.get_text()
             
-            # Guardar texto visible para evaluación posterior
-            self.ultimo_texto_visible = visible_text
-            
             # Buscar email
             email_matches = re.findall(self.email_pattern, visible_text)
-            if email_matches:
-                contacto['email'] = email_matches[0].lower()
+            email_valido = False
+            
+            for email in email_matches:
+                email_lower = email.lower()
+                if self.validar_email(email_lower):
+                    contacto['email'] = email_lower
+                    email_valido = True
+                    self.logger.info(f"Email válido encontrado: {email_lower}")
+                    break
+                else:
+                    self.logger.debug(f"Email descartado: {email_lower}")
+            
+            if not email_valido and email_matches:
+                self.logger.info(f"Se encontraron {len(email_matches)} posibles emails, pero ninguno pasó la validación")
             
             # Buscar teléfono
             phone_matches = re.findall(self.phone_pattern, visible_text)
@@ -218,8 +295,6 @@ class DynamicExtractor(BaseExtractor):
         super().__init__(config)
         self.driver = None
         self.setup_driver()
-        # Variable para almacenar el último texto visible
-        self.ultimo_texto_visible = ""
     
     def setup_driver(self):
         """Configura el navegador Chrome con opciones para evitar detección."""
@@ -285,17 +360,22 @@ class DynamicExtractor(BaseExtractor):
             # Obtener contenido de la página
             page_source = self.driver.page_source
             
-            # Extraer texto visible
-            soup = BeautifulSoup(page_source, 'html.parser')
-            visible_text = soup.get_text()
-            
-            # Guardar texto visible para evaluación posterior
-            self.ultimo_texto_visible = visible_text
-            
             # Buscar email
             email_matches = re.findall(self.email_pattern, page_source)
-            if email_matches:
-                contacto['email'] = email_matches[0].lower()
+            email_valido = False
+            
+            for email in email_matches:
+                email_lower = email.lower()
+                if self.validar_email(email_lower):
+                    contacto['email'] = email_lower
+                    email_valido = True
+                    self.logger.info(f"Email válido encontrado: {email_lower}")
+                    break
+                else:
+                    self.logger.debug(f"Email descartado: {email_lower}")
+            
+            if not email_valido and email_matches:
+                self.logger.info(f"Se encontraron {len(email_matches)} posibles emails, pero ninguno pasó la validación")
             
             # Buscar teléfono
             phone_matches = re.findall(self.phone_pattern, page_source)
@@ -339,93 +419,6 @@ class DynamicExtractor(BaseExtractor):
             self.logger.error(f"Error al cerrar el driver de Selenium: {str(e)}")
 
 
-class EvaluadorRelevancia:
-    """
-    Evalúa la relevancia de una página web para determinar si corresponde
-    a un potencial revendedor según la configuración del sector.
-    """
-    
-    def __init__(self, config: Dict[str, Any]):
-        """
-        Inicializa el evaluador con la configuración de filtros.
-        
-        Args:
-            config: Configuración del sistema
-        """
-        self.logger = logging.getLogger('EvaluadorRelevancia')
-        self.filtros = config.get('filtros_busqueda', {})
-        self.sector_activo = self.filtros.get('sector_activo', 'default')
-        self.config = config
-    
-    def _obtener_terminos_relevancia(self) -> Dict[str, List[str]]:
-        """
-        Obtiene los términos de relevancia del sector activo.
-        
-        Returns:
-            Diccionario con términos relevantes e irrelevantes
-        """
-        sectores = self.filtros.get('sectores', {})
-        if self.sector_activo not in sectores:
-            self.logger.warning(f"Sector '{self.sector_activo}' no encontrado, usando default")
-            sector_config = sectores.get('default', {})
-        else:
-            sector_config = sectores.get(self.sector_activo, {})
-            
-        return {
-            'relevantes': sector_config.get('terminos_relevantes', []),
-            'irrelevantes': sector_config.get('terminos_irrelevantes', [])
-        }
-    
-    def evaluar_pagina(self, texto: str, titulo: str) -> Dict[str, Any]:
-        """
-        Evalúa si una página corresponde a un revendedor potencial.
-        
-        Args:
-            texto: Texto completo de la página
-            titulo: Título de la página
-            
-        Returns:
-            Dict con resultado de evaluación, score y razón
-        """
-        terminos = self._obtener_terminos_relevancia()
-        texto_lower = texto.lower()
-        titulo_lower = titulo.lower() if titulo else ""
-        
-        # Contar términos relevantes (doble peso para los que aparecen en el título)
-        relevantes_encontrados = sum(1 for term in terminos['relevantes'] if term in texto_lower)
-        relevantes_en_titulo = sum(2 for term in terminos['relevantes'] if term in titulo_lower)
-        
-        # Contar términos irrelevantes
-        irrelevantes_encontrados = sum(1 for term in terminos['irrelevantes'] if term in texto_lower)
-        
-        # Calcular puntuación
-        puntuacion_total = relevantes_encontrados + relevantes_en_titulo - irrelevantes_encontrados
-        
-        # Normalizar puntuación (0-100)
-        max_posible = len(terminos['relevantes']) * 3  # texto + doble en título
-        puntuacion_normalizada = min(100, max(0, (puntuacion_total / max(1, max_posible)) * 100))
-        
-        # Evaluar resultado
-        umbral = 40  # Umbral configurable
-        es_relevante = puntuacion_normalizada >= umbral
-        
-        # Determinar razón
-        if puntuacion_normalizada >= 70:
-            razon = "Alta relevancia: probable revendedor"
-        elif puntuacion_normalizada >= umbral:
-            razon = "Relevancia media: posible revendedor"
-        else:
-            razon = "Baja relevancia: probablemente no es revendedor"
-        
-        return {
-            'es_relevante': es_relevante,
-            'puntuacion': puntuacion_normalizada,
-            'razon': razon,
-            'relevantes_encontrados': relevantes_encontrados,
-            'irrelevantes_encontrados': irrelevantes_encontrados
-        }
-
-
 class ExtractorSelector:
     """
     Clase para seleccionar el extractor más adecuado para cada URL.
@@ -442,10 +435,6 @@ class ExtractorSelector:
         self.static_extractor = StaticExtractor(config)
         self.dynamic_extractor = DynamicExtractor(config)
         self.logger = logging.getLogger('ExtractorSelector')
-        self.config = config
-        
-        # Añadir evaluador de relevancia
-        self.evaluador = EvaluadorRelevancia(config)
         
         # Dominios que sabemos que requieren JavaScript
         self.js_required_domains = [
@@ -566,8 +555,7 @@ class ExtractorSelector:
     
     def extraer_informacion(self, url: str, zona: str, tipo_zona: str, keyword: str) -> Dict[str, Any]:
         """
-        Extrae información de contacto usando el extractor más adecuado
-        y evalúa la relevancia del contenido.
+        Extrae información de contacto usando el extractor más adecuado.
         
         Args:
             url: URL a procesar
@@ -578,39 +566,9 @@ class ExtractorSelector:
         Returns:
             Diccionario con la información de contacto
         """
-        # Determinar qué extractor usar
         if self.necesita_javascript(url):
             self.logger.info(f"Usando extractor dinámico para {url}")
-            contacto = self.dynamic_extractor.extraer_info(url, zona, tipo_zona, keyword)
+            return self.dynamic_extractor.extraer_info(url, zona, tipo_zona, keyword)
         else:
             self.logger.info(f"Usando extractor estático para {url}")
-            contacto = self.static_extractor.extraer_info(url, zona, tipo_zona, keyword)
-        
-        # Si se obtuvo contenido visible, evaluar relevancia
-        if contacto and ('nombre' in contacto or 'url' in contacto):
-            # Obtener texto visible (simulado aquí, en una implementación real 
-            # sería el texto completo del sitio)
-            texto_visible = ""
-            titulo = contacto.get('nombre', '')
-            
-            # Para el extractor estático
-            if hasattr(self.static_extractor, 'ultimo_texto_visible'):
-                texto_visible = self.static_extractor.ultimo_texto_visible
-            
-            # Para el extractor dinámico
-            elif hasattr(self.dynamic_extractor, 'ultimo_texto_visible'):
-                texto_visible = self.dynamic_extractor.ultimo_texto_visible
-            
-            # Evaluar relevancia solo si hay suficiente texto
-            if len(texto_visible) > 100 or titulo:
-                evaluacion = self.evaluador.evaluar_pagina(texto_visible, titulo)
-                
-                # Agregar información de relevancia al contacto
-                contacto['relevancia'] = evaluacion['puntuacion']
-                contacto['es_relevante'] = evaluacion['es_relevante']
-                contacto['razon_relevancia'] = evaluacion['razon']
-                
-                # Informar resultado
-                self.logger.info(f"Evaluación de relevancia para {url}: {evaluacion['puntuacion']}% - {evaluacion['razon']}")
-        
-        return contacto
+            return self.static_extractor.extraer_info(url, zona, tipo_zona, keyword)

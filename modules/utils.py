@@ -23,30 +23,10 @@ def cargar_configuracion() -> Dict[str, Any]:
         # Cargar regiones
         with open('config/regiones.json', 'r', encoding='utf-8') as f:
             regiones = json.load(f)
-            
-        # Cargar filtros de búsqueda (archivo nuevo)
-        filtros_path = 'config/filtros_busqueda.json'
-        if os.path.exists(filtros_path):
-            with open(filtros_path, 'r', encoding='utf-8') as f:
-                filtros = json.load(f)
-        else:
-            # Valores predeterminados si no existe
-            filtros = {
-                "sector_activo": "default",
-                "sectores": {
-                    "default": {
-                        "inclusiones": ["distribuidor", "tienda", "venta"],
-                        "exclusiones": ["blog", "foro", "wikipedia"],
-                        "terminos_relevantes": ["productos", "distribución"],
-                        "terminos_irrelevantes": ["fabricante", "productor"]
-                    }
-                }
-            }
         
         # Combinar todo
         config['keywords'] = keywords
         config['regiones'] = regiones
-        config['filtros_busqueda'] = filtros
         
         return config
     except Exception as e:
@@ -60,18 +40,7 @@ def cargar_configuracion() -> Dict[str, Any]:
             "logs": {"level": "INFO", "rotation": True},
             "guardado": {"intervalo": 300},
             "keywords": [],
-            "regiones": {"comunidades": [], "ciudades": {}},
-            "filtros_busqueda": {
-                "sector_activo": "default",
-                "sectores": {
-                    "default": {
-                        "inclusiones": [],
-                        "exclusiones": [],
-                        "terminos_relevantes": [],
-                        "terminos_irrelevantes": []
-                    }
-                }
-            }
+            "regiones": {"comunidades": [], "ciudades": {}}
         }
 
 def setup_logging() -> logging.Logger:
