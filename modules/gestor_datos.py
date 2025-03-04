@@ -24,16 +24,22 @@ class GestorDatos:
         self.telefonos_vistos = set()
         self.ultimo_guardado = datetime.now()
         self.intervalo_guardado = config['guardado']['intervalo']  # segundos
+        
+        # Umbral de relevancia configurable (0-100)
+        self.umbral_relevancia = config.get('umbral_relevancia', 40)
+        
+        # Opción para filtrar contactos sin teléfono
+        self.filtrar_sin_telefono = config.get('filtrar_sin_telefono', False)
     
     def agregar_contacto(self, contacto: Dict[str, Any]) -> bool:
         """
-        Agrega un contacto si no es duplicado.
+        Agrega un contacto si no es duplicado y cumple criterios de relevancia.
         
         Args:
             contacto: Diccionario con datos de contacto
             
         Returns:
-            True si se agregó, False si era duplicado
+            True si se agregó, False si era duplicado o no relevante
         """
         url = contacto.get('url')
         telefono = contacto.get('telefono')
@@ -44,6 +50,21 @@ class GestorDatos:
             
         if telefono and telefono in self.telefonos_vistos:
             return False
+        
+        # Filtrar por teléfono si está configurado
+        if self.filtrar_sin_telefono and not telefono:
+            self.logger.info(f"Contacto filtrado por falta de teléfono: {url}")
+            return False
+        
+        # Filtrar por relevancia si está disponible
+        if 'es_relevante' in contacto:
+            if not contacto['es_relevante']:
+                self.logger.info(f"Contacto filtrado por baja relevancia ({contacto.get('relevancia', 0)}%): {url}")
+                return False
+        elif 'relevancia' in contacto:
+            if contacto['relevancia'] < self.umbral_relevancia:
+                self.logger.info(f"Contacto filtrado por baja relevancia ({contacto['relevancia']}%): {url}")
+                return False
         
         # Agregar a las colecciones
         self.contactos.append(contacto)
@@ -142,7 +163,9 @@ class GestorDatos:
             "con_email": sum(1 for c in self.contactos if 'email' in c and c['email']),
             "con_telefono": sum(1 for c in self.contactos if 'telefono' in c and c['telefono']),
             "comunidades": len(set(c.get('zona') for c in self.contactos if c.get('tipo_zona') == 'comunidad')),
-            "ciudades": len(set(c.get('zona') for c in self.contactos if c.get('tipo_zona') == 'ciudad'))
+            "ciudades": len(set(c.get('zona') for c in self.contactos if c.get('tipo_zona') == 'ciudad')),
+            "alta_relevancia": sum(1 for c in self.contactos if c.get('relevancia', 0) >= 70),
+            "media_relevancia": sum(1 for c in self.contactos if 40 <= c.get('relevancia', 0) < 70)
         }
 
     def guardar_estadisticas(self) -> None:

@@ -24,9 +24,20 @@ def cargar_configuracion() -> Dict[str, Any]:
         with open('config/regiones.json', 'r', encoding='utf-8') as f:
             regiones = json.load(f)
         
+        # Cargar filtros de búsqueda (si existe)
+        filtros_busqueda = {}
+        if os.path.exists('config/filtros_busqueda.json'):
+            try:
+                with open('config/filtros_busqueda.json', 'r', encoding='utf-8') as f:
+                    filtros_busqueda = json.load(f)
+                logging.getLogger('Utils').info("Filtros de búsqueda cargados correctamente")
+            except Exception as e:
+                logging.getLogger('Utils').error(f"Error al cargar filtros de búsqueda: {str(e)}")
+        
         # Combinar todo
         config['keywords'] = keywords
         config['regiones'] = regiones
+        config['filtros_busqueda'] = filtros_busqueda
         
         return config
     except Exception as e:
@@ -40,7 +51,10 @@ def cargar_configuracion() -> Dict[str, Any]:
             "logs": {"level": "INFO", "rotation": True},
             "guardado": {"intervalo": 300},
             "keywords": [],
-            "regiones": {"comunidades": [], "ciudades": {}}
+            "regiones": {"comunidades": [], "ciudades": {}},
+            "filtros_busqueda": {},
+            "umbral_relevancia": 40,
+            "filtrar_sin_telefono": False
         }
 
 def setup_logging() -> logging.Logger:

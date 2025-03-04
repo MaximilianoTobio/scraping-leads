@@ -24,6 +24,60 @@ class GoogleBuscador:
         self.delay_range = config['delays']['entre_busquedas']
         self.logger = logging.getLogger('Buscador')
         self.base_url = "https://customsearch.googleapis.com/customsearch/v1"
+        
+        # Cargar configuración de filtros si existe
+        self.filtros = config.get('filtros_busqueda', {})
+        self.sector_activo = self.filtros.get('sector_activo', 'default')
+    
+    def _obtener_filtros_sector(self) -> Dict[str, List[str]]:
+        """
+        Obtiene los términos de inclusión y exclusión para el sector activo.
+        
+        Returns:
+            Diccionario con términos de inclusión y exclusión
+        """
+        sectores = self.filtros.get('sectores', {})
+        if self.sector_activo not in sectores:
+            self.logger.warning(f"Sector '{self.sector_activo}' no encontrado, usando default")
+            sector_config = sectores.get('default', {})
+        else:
+            sector_config = sectores.get(self.sector_activo, {})
+            
+        return {
+            'inclusiones': sector_config.get('inclusiones', []),
+            'exclusiones': sector_config.get('exclusiones', [])
+        }
+    
+    def _construir_query_optimizada(self, keyword: str, region: str) -> str:
+        """
+        Construye una consulta optimizada con términos de inclusión y exclusión.
+        
+        Args:
+            keyword: Palabra clave principal
+            region: Región geográfica
+            
+        Returns:
+            Consulta optimizada para la API de Google
+        """
+        filtros = self._obtener_filtros_sector()
+        
+        # Términos de inclusión (al menos uno debe estar presente)
+        inclusion_terms = filtros['inclusiones']
+        if inclusion_terms:
+            inclusion_query = " OR ".join(inclusion_terms)
+            inclusion_query = f"({inclusion_query})"
+        else:
+            inclusion_query = ""
+        
+        # Términos de exclusión (ninguno debe estar presente)
+        exclusion_terms = filtros['exclusiones']
+        exclusion_query = " ".join([f"-{term}" for term in exclusion_terms]) if exclusion_terms else ""
+        
+        # Construir consulta final
+        query_parts = [keyword, region, inclusion_query, exclusion_query, "contacto site:.es"]
+        query = " ".join(filter(None, query_parts))
+        
+        return query
     
     def buscar(self, keyword: str, region: str) -> List[str]:
         """
@@ -36,7 +90,7 @@ class GoogleBuscador:
         Returns:
             Lista de URLs de resultados
         """
-        query = f"{keyword} {region} contacto site:.es"
+        query = self._construir_query_optimizada(keyword, region)
         self.logger.info(f"Buscando: '{query}'")
         
         params = {

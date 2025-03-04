@@ -1,23 +1,90 @@
 {
-  "sector_activo": "default",
+  "sector_activo": "herbolarios",
   "sectores": {
     "default": {
-      "inclusiones": ["distribuidor", "tienda", "venta", "mayorista", "minorista"],
+      "inclusiones": [
+        "distribuidor",
+        "tienda",
+        "venta",
+        "mayorista",
+        "minorista"
+      ],
       "exclusiones": ["receta", "blog", "foro", "wikipedia", "noticias"],
-      "terminos_relevantes": ["catálogo", "productos", "distribución", "precios", "stock"],
+      "terminos_relevantes": [
+        "catálogo",
+        "productos",
+        "distribución",
+        "precios",
+        "stock"
+      ],
       "terminos_irrelevantes": ["fabricante", "productor", "elaboración propia"]
     },
-    "cbd": {
-      "inclusiones": ["herbolario", "tienda natural", "wellness"],
-      "exclusiones": ["farmacia", "panadería", "restaurante", "cocina"],
-      "terminos_relevantes": ["aceite", "cannabidiol", "cáñamo", "extracto"],
-      "terminos_irrelevantes": ["recetas", "cocinar", "comida"]
+    "herbolarios": {
+      "inclusiones": [
+        "herbolario",
+        "tienda natural",
+        "productos naturales",
+        "herboristería"
+      ],
+      "exclusiones": [
+        "farmacia",
+        "parafarmacia",
+        "consulta médica",
+        "clínica",
+        "universidad",
+        "facultad",
+        "restaurante",
+        "cocina",
+        "junta vecinal"
+      ],
+      "terminos_relevantes": [
+        "productos",
+        "herbolario",
+        "naturales",
+        "dietética",
+        "suplementos",
+        "venta",
+        "tienda",
+        "comprar",
+        "natural"
+      ],
+      "terminos_irrelevantes": [
+        "cita previa",
+        "consulta",
+        "tratamiento",
+        "diagnóstico",
+        "nutricionista",
+        "terapia",
+        "curso",
+        "formación",
+        "estudiante"
+      ]
     },
-    "cosmetica": {
-      "inclusiones": ["belleza", "estética", "peluquería", "spa"],
-      "exclusiones": ["formación", "academia", "cursos"],
-      "terminos_relevantes": ["crema", "tratamiento", "productos", "distribución"],
-      "terminos_irrelevantes": ["servicio", "cita", "tratamiento facial"]
+    "cbd": {
+      "inclusiones": ["cbd", "cannabis", "cáñamo", "cannabidiol"],
+      "exclusiones": [
+        "farmacia",
+        "panadería",
+        "restaurante",
+        "cocina",
+        "receta"
+      ],
+      "terminos_relevantes": [
+        "aceite",
+        "cannabidiol",
+        "cáñamo",
+        "extracto",
+        "cbd",
+        "tienda",
+        "venta"
+      ],
+      "terminos_irrelevantes": [
+        "recetas",
+        "cocinar",
+        "comida",
+        "consulta",
+        "médico"
+      ]
     }
   }
 }
